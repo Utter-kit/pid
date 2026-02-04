@@ -1,95 +1,10 @@
-# pid
-pid
-#include <stdio.h>
+无人机项目
+│ ├── AttitudeCtrl.c 姿态解算
 
-typedef struct{
-    float kp;
-    float ki;
-    float kd;
+│ ├── FireflyDrone_main.c 主控系统
 
-    float integral;
-    float prev_measurement;
-    float out_min;
-    float out_max;
-    float integral_min;
-    float integral_max;
-} PID_t;
+│ ├── KalmanFilter.c 卡尔曼滤波算法
 
-void PID_Init(PID_t *pid, float kp, float ki, float kd, float out_min, float out_max,
-    float integral_min, float integral_max){
-        pid -> kp = kp;
-        pid -> ki = ki;
-        pid -> kd = kd;
+│ ├── mpu6050.c mpu6050传感器库
 
-        pid -> integral = 0.0f;
-        pid -> prev_measurement = 0.0f;
-
-        pid -> out_min = out_min;
-        pid -> out_max = out_max;
-        pid -> integral_min = integral_min;
-        pid -> integral_max = integral_max;
-
-}
-float PID_Update(PID_t *pid, float setpoint, float measurement, float dt)
-{   
-    if (dt <= 0.0f) return 0.0f;
-    float error = setpoint - measurement;
-
-    float p_term = pid -> kp * error;
-
-    pid->integral += error * dt;
-    if (pid -> integral > pid -> integral_max) pid -> integral = pid -> integral_max;
-    if (pid -> integral < pid -> integral_min) pid -> integral = pid -> integral_min;
-    float i_term = pid -> ki * pid -> integral;
-
-    float derivative = (error - pid -> prev_error) / dt;
-    float d_term = pid -> kd * derivative;
-
-    pid->prev_error = error;
-
-    float output = p_term + i_term + d_term;
-
-    if (output > pid -> out_max) output = pid -> out_max;
-    if (output < pid -> out_min) output = pid -> out_min;
-
-    return output;
-}
-
-    PID_t pid_roll;
-    PID_t pid_pitch;
-    PID_t pid_yaw;
-
-    void attitude_pid_init(void){
-        PID_Init(&pid_roll, 4.0f, 0.02f, 0.8f, -200.0f, 200.0f, -50, 50);
-        PID_Init(&pid_pitch, 4.0f, 0.02f, 0.8f, -200.0f, 200.0f, -50, 50);
-        PID_Init(&pid_yaw, 2.0f, 0.01f, 0.5f, -200.0f, 200.0f, -50, 50);
-    }
-
-
-#include <math.h>
-#include "quaternion.h"
-
-Quaternion quatMultiply(Quaternion q1, Quaternion q2) {
-    Quaternion res;
-    res.w = q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z;
-    res.x = q1.w*q2.x + q1.x*q2.w + q1.y*q2.z - q1.z*q2.y;
-    res.y = q1.w*q2.y - q1.x*q2.z + q1.y*q2.w + q1.z*q2.x;
-    res.z = q1.w*q2.z + q1.x*q2.y - q1.y*q2.x + q1.z*q2.w;
-    return res;
-}
-
-void quatNormalize(Quaternion *q) {
-    double norm = sqrt(q->w*q->w + q->x*q->x + q->y*q->y + q->z*q->z);
-    q->w /= norm;
-    q->x /= norm;
-    q->y /= norm;
-    q->z /= norm;
-}
-
-Quaternion quatConjugate(Quaternion q) {
-    Quaternion res = q;
-    res.x = -q.x;
-    res.y = -q.y;
-    res.z = -q.z;
-    return res;
-}
+│ └── quaternion.c 四元数支持库
